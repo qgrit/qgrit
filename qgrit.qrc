@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>qgrit16.png</file>
+        <file>qgrit32.png</file>
+    </qresource>
+</RCC>
