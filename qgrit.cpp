@@ -33,10 +33,10 @@ int main(int argc, char *argv[])
     {
         if(filename.endsWith(QLatin1String("git-rebase-todo"))) //usually .git/rebase-merge/git-rebase-todo
         {
-            RebaseDialog w;
-            w.readFile(filename);
-            w.fillList();
-            w.show();
+            RebaseDialog d;
+            d.readFile(filename);
+            d.fillList();
+            d.show();
             return a.exec();
         }
         else
