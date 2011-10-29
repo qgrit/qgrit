@@ -127,9 +127,22 @@ bool RebaseDialog::readFile(const QString &filename)
         int space = str1.indexOf(QLatin1Char(' '));
         QString action = str1.left(space);
         str1 = str1.mid(space + 1);
+
+        //now line looks like this: "412c9c3 description headline"
         space = str1.indexOf(QLatin1Char(' '));
-        QString sha1 = str1.left(space);
-        QString description = str1.mid(space + 1);
+        QString sha1;
+        QString description;
+        if(space != -1)
+        {
+            sha1 = str1.left(space);
+            description = str1.mid(space + 1);
+        }
+        else
+        {
+            sha1 = str1;
+            description = QLatin1String("");
+            //no description
+        }
 
         //reorder list to look like in gitk
         //file: top = oldest
