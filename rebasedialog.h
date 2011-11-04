@@ -14,8 +14,10 @@ public:
     QString action;
     QString sha1;
     QString description;
+    QString longdesc;
 
-    ListEntry(QString action, QString sha1, QString description) : action(action), sha1(sha1), description(description)
+    ListEntry(QString action, QString sha1, QString description, QString longdesc) :
+        action(action), sha1(sha1), description(description), longdesc(longdesc)
     {}
 };
 

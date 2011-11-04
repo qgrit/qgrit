@@ -35,6 +35,12 @@ int main(int argc, char *argv[])
     {
         if(filename.endsWith(QLatin1String("git-rebase-todo"))) //usually .git/rebase-merge/git-rebase-todo
         {
+            bool found = GitTool::startupFindGit();
+            if(!found)
+            {
+                QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Could not find installed git version."));
+                return 1;
+            }
             RebaseDialog d;
             d.readFile(filename);
             d.fillList();

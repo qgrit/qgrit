@@ -15,7 +15,8 @@ Features
 * Easy aborting of the rebase(no need to delete all lines in a text file)
 * Easy way of undoing all changes made to the list and start over again
 * Commits are sorted in the same order as in gitk, no more confusion about order
-* Tool tips that explain different actions
+* Tool tips explaining different actions (pick, edit, reword, squash, fixup)
+* Tool tips contain full commit message, not only subject line
 
 
 Integration into git

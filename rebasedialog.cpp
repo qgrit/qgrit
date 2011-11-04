@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QTreeWidgetItem>
 
+#include "gittool.h"
 #include "rebasedialog.h"
 #include "ui_rebasedialog.h"
 #include "commandcombo.h"
@@ -97,6 +98,19 @@ void RebaseDialog::slot_itemIserted(const QModelIndex &parent, int start, int en
     }
 }
 
+static QString gitCommitMessage(const QString &commit)
+{
+    QByteArray stdOut;
+    QStringList sl;
+    //git log -1 --encoding=utf8 --pretty=format:%B
+
+    sl << QLatin1String("log") << QLatin1String("-1") << QLatin1String("--encoding=utf8") << QLatin1String("--pretty=format:%B") << commit;
+    GitTool::gitExecuteStdOutStdErr(sl, stdOut);
+    GitTool::stripTrailingNewline(stdOut);
+
+    return QString::fromUtf8(stdOut.constData(), stdOut.length());
+}
+
 bool RebaseDialog::readFile(const QString &filename)
 {
     QFile f(filename);
@@ -143,11 +157,12 @@ bool RebaseDialog::readFile(const QString &filename)
             description = QLatin1String("");
             //no description
         }
+        QString longdesc = gitCommitMessage(sha1);
 
         //reorder list to look like in gitk
         //file: top = oldest
         //tool: top = newest
-        m_list.prepend(ListEntry(action, sha1, description));
+        m_list.prepend(ListEntry(action, sha1, description, longdesc));
     }
 
     m_filename = filename;
@@ -169,6 +184,7 @@ void RebaseDialog::fillList()
         //do not allow to drop other items onto this one,
         //otherwise the other element is removed, also this makes no sense...
         item->setFlags(item->flags() & ~Qt::ItemIsDropEnabled);
+        item->setToolTip(3, entry.longdesc);
 
         if(!itemfirst)
             itemfirst = item;
