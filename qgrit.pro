@@ -9,11 +9,13 @@ TEMPLATE = app
 SOURCES += \
     qgrit.cpp \
     rebasedialog.cpp \
-    commandcombo.cpp
+    commandcombo.cpp \
+    gittool.cpp
 
 HEADERS += \
     rebasedialog.h \
-    commandcombo.h
+    commandcombo.h \
+    gittool.h
 
 FORMS   += \
     rebasedialog.ui
