@@ -5,6 +5,8 @@
 #include <QProcess>
 #include <QTextStream>
 
+#include "gittool.h"
+#include "configdialog.h"
 #include "rebasedialog.h"
 
 int main(int argc, char *argv[])
@@ -49,6 +51,19 @@ int main(int argc, char *argv[])
                                               "This is not supported, please fix your git configuration to use qgrit only as rebase -i editor.").replace(QLatin1String("%1"), filename));
             return 1;
         }
+    }
+    else if(arguments.length() == 1)
+    {
+        //no arguments supplied, show a configuration dialog
+        bool found = GitTool::startupFindGit();
+        if(!found)
+        {
+            QMessageBox::critical(0, QObject::tr("Error"), QObject::tr("Could not find installed git version."));
+            return 1;
+        }
+        ConfigDialog d;
+        d.show();
+        return a.exec();
     }
     else
     {

@@ -21,17 +21,21 @@ Features
 Integration into git
 ====================
 
-* patched git versions:
-install:
+* git v1.7.8 and above:
+easy install/uninstall:
+Start qgrit
+Press the "Install qgrit" or "Uninstall qgrit" button.
+
+manual install:
 git config --global sequence.editor "/path/to/qgrit --rebasei"
 
-uninstall:
+manual uninstall:
 git config --global --unset sequence.editor
 
 If you want to use qgrit only in a certain repository
 cd into the repository before invoking git config without "--global"
 
-* unpatched git versions:
+* git v1.7.* and below:
 Older versions of git have no configuration for only invoking qgrit
 as editor for interactive rebase list but not for editing commit messages.
 

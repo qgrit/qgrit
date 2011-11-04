@@ -10,15 +10,18 @@ SOURCES += \
     qgrit.cpp \
     rebasedialog.cpp \
     commandcombo.cpp \
+    configdialog.cpp \
     gittool.cpp
 
 HEADERS += \
     rebasedialog.h \
     commandcombo.h \
+    configdialog.h \
     gittool.h
 
 FORMS   += \
-    rebasedialog.ui
+    rebasedialog.ui \
+    configdialog.ui
 
 win32 {
     RC_FILE = icon.rc
