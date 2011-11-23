@@ -53,6 +53,7 @@ RebaseDialog::RebaseDialog(QWidget *parent) :
     m_ui->treeWidget->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_ui->treeWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_ui->treeWidget->setDragDropMode(QAbstractItemView::InternalMove);
+    connect(m_ui->treeWidget, SIGNAL(itemSelectionChanged()), this, SLOT(slot_itemSelectionChanged()));
 
     QStyle *s = this->style();
     m_ui->pushButtonUp->setIcon(s->standardIcon(QStyle::SP_ArrowUp, 0, m_ui->pushButtonUp));
@@ -62,6 +63,48 @@ RebaseDialog::RebaseDialog(QWidget *parent) :
 
     QAbstractItemModel *m = m_ui->treeWidget->model();
     connect(m, SIGNAL(rowsInserted(const QModelIndex,int,int)), this, SLOT(slot_itemIserted(QModelIndex,int,int)));
+}
+
+void RebaseDialog::slot_itemSelectionChanged()
+{
+    //clear background and remove tooltip
+    for(int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++)
+    {
+        m_ui->treeWidget->topLevelItem(i)->setBackground(1, QBrush());
+        m_ui->treeWidget->topLevelItem(i)->setToolTip(1, QString());
+    }
+
+    QList<QTreeWidgetItem *> selectedItems = m_ui->treeWidget->selectedItems();
+    QStringList allfiles;
+    //get list of all files modified by selected commits
+    foreach(QTreeWidgetItem *item, selectedItems)
+    {
+        QList<QString> files = item->data(0, Qt::UserRole).toStringList();
+        allfiles.append(files);
+    }
+    allfiles.sort();
+    allfiles.removeDuplicates();
+    //now check all unselected items to see if they modify the same files
+    for(int i = 0; i < m_ui->treeWidget->topLevelItemCount(); i++)
+    {
+        QTreeWidgetItem *item = m_ui->treeWidget->topLevelItem(i);
+        if(!selectedItems.contains(item))
+        {
+            QStringList affectedfiles;
+            QList<QString> files = item->data(0, Qt::UserRole).toStringList();
+            foreach(const QString &str, allfiles)
+            {
+                if(files.contains(str))
+                    affectedfiles.append(str);
+            }
+            if(!affectedfiles.isEmpty())
+            {
+                item->setBackground(1, QBrush(Qt::yellow));
+                item->setToolTip(1, tr("This commit modifies the same files as the selected commits:\n")
+                                 + affectedfiles.join(QLatin1String("\n")));
+            }
+        }
+    }
 }
 
 void RebaseDialog::keyPressEvent(QKeyEvent *event)
@@ -98,17 +141,39 @@ void RebaseDialog::slot_itemIserted(const QModelIndex &parent, int start, int en
     }
 }
 
-static QString gitCommitMessage(const QString &commit)
+static QString gitCommitMessage(const QString &commit, QList<QString> &filenames)
 {
     QByteArray stdOut;
     QStringList sl;
-    //git log -1 --encoding=utf8 --pretty=format:%B
+    //git log -1 -z --name-only --encoding=utf8 --pretty=format:%B%x01 commit_id
 
-    sl << QLatin1String("log") << QLatin1String("-1") << QLatin1String("--encoding=utf8") << QLatin1String("--pretty=format:%B") << commit;
+    //headline
+    //
+    //log message
+    //\x01fileA\x00fileB\x00fileC\x00
+
+    //using %x00 does not work on Windows
+    sl << QLatin1String("log") << QLatin1String("-1") << QLatin1String("-z") << QLatin1String("--name-only") << QLatin1String("--encoding=utf8") << QLatin1String("--pretty=format:%B%x01") << commit;
     GitTool::gitExecuteStdOutStdErr(sl, stdOut);
-    GitTool::stripTrailingNewline(stdOut);
 
-    return QString::fromUtf8(stdOut.constData(), stdOut.length());
+    QList<QByteArray> split = stdOut.split('\x01');
+    Q_ASSERT(split.length() == 2);
+    QByteArray message = split.at(0);
+    split = split.at(1).split('\x00');
+    QByteArray empty = split.takeLast();
+    Q_ASSERT(empty.isEmpty());
+
+    for(int i = 0; i < split.length(); ++i)
+    {
+        QByteArray b = split.at(i);
+        //first entry has errornous \n at start
+        if(b.startsWith('\n'))
+            b = b.mid(1);
+        filenames.append(QString::fromUtf8(b.constData()));
+    }
+
+    GitTool::stripTrailingNewline(message);
+    return QString::fromUtf8(message.constData());
 }
 
 bool RebaseDialog::readFile(const QString &filename)
@@ -157,12 +222,13 @@ bool RebaseDialog::readFile(const QString &filename)
             description = QLatin1String("");
             //no description
         }
-        QString longdesc = gitCommitMessage(sha1);
+        QList<QString> filenames;
+        QString longdesc = gitCommitMessage(sha1, filenames);
 
         //reorder list to look like in gitk
         //file: top = oldest
         //tool: top = newest
-        m_list.prepend(ListEntry(action, sha1, description, longdesc));
+        m_list.prepend(ListEntry(action, sha1, description, longdesc, filenames));
     }
 
     m_filename = filename;
@@ -185,6 +251,7 @@ void RebaseDialog::fillList()
         //otherwise the other element is removed, also this makes no sense...
         item->setFlags(item->flags() & ~Qt::ItemIsDropEnabled);
         item->setToolTip(3, entry.longdesc);
+        item->setData(0, Qt::UserRole, QVariant(entry.files));
 
         if(!itemfirst)
             itemfirst = item;

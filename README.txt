@@ -11,6 +11,7 @@ Features
 
 * Commits can be moved/reordered by Drag & Drop or by up/down buttons.
 * Multiple commits can be moved up/down in a single step
+* Commits that touch the same files as the currently selected commits are highlighted
 * Actions for modifying commits can be selected from a combo box.
 * Easy aborting of the rebase(no need to delete all lines in a text file)
 * Easy way of undoing all changes made to the list and start over again

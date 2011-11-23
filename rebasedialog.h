@@ -15,9 +15,10 @@ public:
     QString sha1;
     QString description;
     QString longdesc;
+    QList<QString> files;
 
-    ListEntry(QString action, QString sha1, QString description, QString longdesc) :
-        action(action), sha1(sha1), description(description), longdesc(longdesc)
+    ListEntry(QString action, QString sha1, QString description, QString longdesc, QList<QString> files) :
+        action(action), sha1(sha1), description(description), longdesc(longdesc), files(files)
     {}
 };
 
@@ -43,6 +44,7 @@ private slots:
     void on_pushButtonStart_clicked();
     void on_pushButtonCancel_clicked();
     void slot_itemIserted(const QModelIndex &parent, int start, int end);
+    void slot_itemSelectionChanged();
 
 private:
     Ui::MainDialog *m_ui;
