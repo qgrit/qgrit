@@ -250,7 +250,19 @@ void RebaseDialog::fillList()
         //do not allow to drop other items onto this one,
         //otherwise the other element is removed, also this makes no sense...
         item->setFlags(item->flags() & ~Qt::ItemIsDropEnabled);
-        item->setToolTip(3, entry.longdesc);
+        QString tooltip = entry.longdesc + QLatin1String("\n");
+        for(int j = 0; j < entry.files.size(); j++)
+        {
+            tooltip = tooltip + QLatin1String("\n") + entry.files.at(j);
+            //maximum 10 files to keep overview
+            if(j >= 9 && entry.files.size() > 10)
+            {
+                tooltip = tooltip + QString(QLatin1String("\n... %1 other files")).replace(
+                            QLatin1String("%1"), QString::number(entry.files.size() - 10));
+                break;
+            }
+        }
+        item->setToolTip(3, tooltip);
         item->setData(0, Qt::UserRole, QVariant(entry.files));
 
         if(!itemfirst)

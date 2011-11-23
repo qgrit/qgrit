@@ -18,6 +18,7 @@ Features
 * Commits are sorted in the same order as in gitk, no more confusion about order
 * Tool tips explaining different actions (pick, edit, reword, squash, fixup)
 * Tool tips contain full commit message, not only subject line
+* Tool tips list files changed by commit(and a count of files if they are more than 10)
 
 
 Integration into git
